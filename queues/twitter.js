@@ -6,6 +6,7 @@ var mongo = require('mongojs');
 var util = require('util');
 
 var log = require('./../lib/log');
+var locationLookup = require('./../lib/geonames/locationLookup');
 var QueueWorker = require('./../lib/queueWorker');
 
 
@@ -53,6 +54,23 @@ TwitterQueueWorker.prototype.parse = function (data) {
             post.ProfileUrl = "https://twitter.com/" + post.Author;
             post.Lang = obj.user.lang;
             post.Network = "Twitter";
+            post.UserAttributes = {};
+            post.LocationAttributes = {};
+
+            if (obj.user.description)
+                post.UserAttributes.Bio = obj.user.description;
+            if (obj.user.profile_image_url)
+                post.UserAttributes.ProfileImage = obj.user.profile_image_url;
+            if (obj.user.name)
+                post.UserAttributes.DisplayName = obj.user.name;
+            if (obj.user.url)
+                post.UserAttributes.Url = obj.user.url;
+
+            // Gather the location so it can be looked up later if needed
+            var location = "";
+            if (obj.user.location) 
+                location = obj.user.location.trim();
+            post.UserAttributes.Location = location;
 
             post.Urls = [];
             if (obj.entities && obj.entities.urls) {
@@ -80,6 +98,7 @@ TwitterQueueWorker.prototype.parse = function (data) {
             }
 
             post.Loc = [0,0];
+            var lookupLocation = false;
             if (obj.coordinates || obj.geo || obj.place) {
                 if (obj.coordinates && obj.coordinates.coordinates) {
                     var loc = obj.coordinates;
@@ -97,12 +116,18 @@ TwitterQueueWorker.prototype.parse = function (data) {
                                 (bottomRight[1] + topLeft[1]) / 2];
                 }
             }
+            else if (location != "" && (post.Loc[0] == 0 && post.Loc[1] == 0)) {
+                lookupLocation = true;
+            }
 
             post.IsReshare = false;
             if (obj.retweeted_status) {
                 post.IsReshare = true;
                 post.OriginalIdent = obj.retweeted_status.id_str;
-                post.OriginalAuthor = obj.retweeted_status.screen_name;
+                post.OriginalAuthor = obj.retweeted_status.user.screen_name;
+                post.OriginalProfileUrl = "http://twitter.com/" + post.OriginalAuthor;
+                post.OriginalTimeMs = Date.parse(obj.retweeted_status.created_at);
+                post.OriginalReach = obj.retweeted_status.user.followers_count;
             }
 
             post.Stats = {};
@@ -111,8 +136,28 @@ TwitterQueueWorker.prototype.parse = function (data) {
             post.Stats.TopicReach = post.IsReshare ? 0 : post.Stats.Reach;
             post.Stats.TopicSpread = post.IsReshare ? post.Stats.Reach : 0;
 
-            var message = JSON.stringify(post);
-            this.redisClient.rpush('queue:postitems:sentiment', message);
+            if (lookupLocation) {
+                var timezone = obj.user.time_zone;
+                var lang = obj.user.lang;
+                if (location != "") {
+                    var self = this;
+                    locationLookup.determineLocation(location, timezone, lang, function (result) {
+                        if (result && result.StatusCode == 200 && result.Result) {
+                            var place = result.Result;
+                            post.Loc = place.Loc;
+                            post.LocationAttributes.Country = place.Country;
+                            post.LocationAttributes.State = place.State;
+                            post.LocationAttributes.StateCode = locationLookup.getStateCode(place.CountryCode, place.StateCode);
+
+                            self.redisClient.rpush('queue:postitems:stats', JSON.stringify(post));
+                            return;
+                        }
+                    });
+                }
+            }
+
+            this.redisClient.rpush('queue:postitems:stats', JSON.stringify(post));
+            return;
         }
     }
     catch (err) {
