@@ -8,6 +8,7 @@ var util = require('util');
 var log = require('./../lib/log');
 var locationLookup = require('./../lib/geonames/locationLookup');
 var QueueWorker = require('./../lib/queueWorker');
+var Cities = require('./../lib/geonames/citiesRepo');
 
 
 // Sets up the sentiment worker as a queue worker with name and id
@@ -15,6 +16,7 @@ function TwitterQueueWorker() {
     QueueWorker.call(this, 'queue:twitter:parse');
     this.name = function () { return 'Twitter Queue'; };
     this.id = function () { return 'b0671772-b892-4a98-b37d-2bf8e4129f5e'; };
+    this.citiesRepo = new Cities();
 };
 
 
@@ -139,9 +141,9 @@ TwitterQueueWorker.prototype.parse = function (data) {
             if (lookupLocation) {
                 var timezone = obj.user.time_zone;
                 var lang = obj.user.lang;
-                if (location != "") {
+                if (obj.user.location != "") {
                     var self = this;
-                    locationLookup.determineLocation(location, timezone, lang, function (result) {
+                    locationLookup.determineLocation(this.citiesRepo, obj.user.location.trim(), null, null, function (result) {
                         if (result && result.StatusCode == 200 && result.Result) {
                             var place = result.Result;
                             post.Loc = place.Loc;
