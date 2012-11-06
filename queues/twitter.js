@@ -149,14 +149,14 @@ TwitterQueueWorker.prototype.parse = function (data) {
                             post.LocationAttributes.State = place.State;
                             post.LocationAttributes.StateCode = locationLookup.getStateCode(place.CountryCode, place.StateCode);
 
-                            self.redisClient.rpush('queue:postitems:stats', JSON.stringify(post));
+                            self.redisClient.rpush('queue:postitems:analysis', JSON.stringify(post));
                             return;
                         }
                     });
                 }
             }
 
-            this.redisClient.rpush('queue:postitems:stats', JSON.stringify(post));
+            this.redisClient.rpush('queue:postitems:analysis', JSON.stringify(post));
             return;
         }
     }
