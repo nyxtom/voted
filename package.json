@@ -1,0 +1,21 @@
+{
+  "name": "nuvi",
+  "version": "0.1.0",
+  "description": "node-nuvi",
+  "keywords": ["twitter","facebook","streaming","nlp","redis"],
+  "author": "nyxtom",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/mevalu/node-nuvi.git"
+  },
+  "dependencies": {
+    "hiredis": ">=0.1.13",
+    "ntwitter": ">=0.2.9-2",
+    "redis": ">=0.7.1",
+    "node-uuid": ">=1.3.3",
+    "optimist": ">=0.3.1",
+    "mongojs": ">=0.4.3",
+    "string": "*"
+  },
+  "engines": {"node":">=0.4.0"}
+}
