@@ -6,7 +6,7 @@ exports.values = {
         SystemConnection: 'localhost/nuvis_system',
         LogConnection: 'localhost/nuvis_log',
         SocialConnection: 'localhost/nuvis_social',
-        GeoNamesConnection: 'localhost/nuvis_geonames'
+        GeoNamesConnection: 'localhost/geonames'
     },
     redis: {
         port: 6379,
