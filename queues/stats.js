@@ -38,6 +38,10 @@ StatsWorker.prototype.parse = function (data) {
         if (post.LocationAttributes.Country) {
             this.redisClient.zincrby(['voted-countries', 1, post.LocationAttributes.Country], function (err, response) {});
         }
+
+        if (post.Author) {
+            this.redisClient.zincrby(['voting-authors', 1, post.Author], function (err, response) {});
+        }
     }
     catch (err) {
         log('ERROR', err);
