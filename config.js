@@ -2,10 +2,9 @@
 exports.values = {
     verbose: true,
     server: {
-        SentimentConnection: 'localhost/nuvis_sentiment',
-        SystemConnection: 'localhost/nuvis_system',
-        LogConnection: 'localhost/nuvis_log',
-        SocialConnection: 'localhost/nuvis_social',
+        SystemConnection: 'localhost/system',
+        LogConnection: 'localhost/log',
+        SocialConnection: 'localhost/social',
         GeoNamesConnection: 'localhost/geonames'
     },
     redis: {

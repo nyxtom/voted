@@ -11,6 +11,7 @@ var config = require('./../config.js').values;
 var citiesRepo = require('./../lib/geonames/citiesRepo');
 var Place = require('./../lib/geonames/place');
 var locationLookup = require('./../lib/geonames/locationLookup');
+var utils = require('./../lib/utils');
 
 
 // Sets up the stats worker as a queue worker with name and id
@@ -18,6 +19,7 @@ function StatsWorker() {
     QueueWorker.call(this, 'queue:postitems:stats');
     this.name = function () { return 'Stats Queue'; };
     this.id = function () { return 'fksdjakf32-6702-4341-9db4-ksdfjaksd333'; };
+    this.db = utils.getMongoConnection(config.server.SocialConnection, ['postitems']);
 };
 
 
@@ -29,6 +31,8 @@ module.exports = StatsWorker;
 StatsWorker.prototype.parse = function (data) {
     try {
         var post = JSON.parse(data);
+        this.db.postitems.save(post);
+
         if (post.LocationAttributes.StateCode) {
             this.redisClient.zincrby(['voted-states', 1, post.LocationAttributes.StateCode], function (err, response) {});
         }
