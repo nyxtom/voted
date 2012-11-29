@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# e.g. ./import-postalcodes.pl -h localhost -u nuvicorp -p XXX
-
 use strict;
 use warnings;
 use MongoDB;

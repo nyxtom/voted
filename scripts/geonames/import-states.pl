@@ -2,8 +2,6 @@
 
 =pod
 
-e.g. ./import-states.pl -h localhost -u nuvicorp -p XXX
-
 Internet users per country and population per country available from world bank here:
  http://databank.worldbank.org/Data/Views/VariableSelection/SelectVariables.aspx?source=World%20Development%20Indicators%20and%20Global%20Development%20Finance#
 
